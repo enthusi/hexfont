@@ -1,0 +1,51 @@
+begin_genhex
+generate_hexfont
+    movw CHAR_TBL,r11 ;destination
+    movw hexfontdata, r24
+    mov 15,r23 ;how often to repeat MSB
+    mov 0, r14; which character to use MSB
+_charsetloop
+    mov 0, r18; which character to use LSB
+    mov 15,r15 ;how often to repeat LSB
+_digitloop    
+    ;msb source
+    mov r24, r10 ;source
+    mov r14,r16
+    ;get offset in hexfontdata
+    andi 1,r16,r17 ;0(2,4) or 1(3,5..)?
+    add r17,r10
+    shr 1,r16
+    shl 4, r16 ;*8
+    add r16,r10
+    ;lsb source
+    mov r24, r20 ;source
+    mov r18,r21
+    ;get offset in hexfontdata
+    andi 1,r21,r22 ;0(2,4) or 1(3,5..)?
+    add r22,r20
+    shr 1, r21
+    shl 4, r21 ;*8
+    add r21,r20
+    mov 8, r13
+_charloop    
+    in.b [r10],r12 ;msb
+    st.b r12, 0[r11]
+    in.b [r20],r12 ;lsb
+    st.b r12, 1[r11]
+    add 2,r10
+    add 2,r20
+    add 2,r11
+    add -1,r13
+    bne _charloop
+    add 1, r18
+    add -1, r15
+    bp _digitloop
+    add 1, r14
+    add -1, r23
+    bp _charsetloop
+    ret
+    
+hexfontdata
+    LIBBIN hexset.dat
+    EVEN 4
+end_genhex    
